@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.25.xsd">
+
+    <changeSet id="1" author="devartall">
+        <createTable tableName="admins">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="telegram_id" type="bigint">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="username" type="varchar(255)"/>
+            <column name="first_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="varchar(255)"/>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createSequence sequenceName="admins_id_seq" startValue="1" incrementBy="1"/>
+        <sql>ALTER SEQUENCE admins_id_seq OWNED BY admins.id;</sql>
+        <sql>ALTER TABLE admins ALTER COLUMN id SET DEFAULT nextval('admins_id_seq');</sql>
+    </changeSet>
+
+</databaseChangeLog> 

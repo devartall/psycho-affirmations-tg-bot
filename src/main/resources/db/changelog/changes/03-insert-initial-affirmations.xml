@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.25.xsd">
+
+    <changeSet id="1" author="devartall">
+        <insert tableName="affirmations">
+            <column name="id" valueComputed="nextval('affirmations_id_seq')"/>
+            <column name="text" value="Я сильный и способный человек"/>
+            <column name="author_id" value="1"/>
+            <column name="author_username" value="system"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="affirmations">
+            <column name="id" valueComputed="nextval('affirmations_id_seq')"/>
+            <column name="text" value="Каждый день я становлюсь лучше"/>
+            <column name="author_id" value="1"/>
+            <column name="author_username" value="system"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="affirmations">
+            <column name="id" valueComputed="nextval('affirmations_id_seq')"/>
+            <column name="text" value="Я заслуживаю счастья и успеха"/>
+            <column name="author_id" value="1"/>
+            <column name="author_username" value="system"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="affirmations">
+            <column name="id" valueComputed="nextval('affirmations_id_seq')"/>
+            <column name="text" value="Я привлекаю в свою жизнь позитивную энергию"/>
+            <column name="author_id" value="1"/>
+            <column name="author_username" value="system"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="affirmations">
+            <column name="id" valueComputed="nextval('affirmations_id_seq')"/>
+            <column name="text" value="Я доверяю своей интуиции и мудрости"/>
+            <column name="author_id" value="1"/>
+            <column name="author_username" value="system"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="affirmations">
+            <column name="id" valueComputed="nextval('affirmations_id_seq')"/>
+            <column name="text" value="Я создаю свою реальность своими мыслями"/>
+            <column name="author_id" value="1"/>
+            <column name="author_username" value="system"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="affirmations">
+            <column name="id" valueComputed="nextval('affirmations_id_seq')"/>
+            <column name="text" value="Я благодарен за все, что у меня есть"/>
+            <column name="author_id" value="1"/>
+            <column name="author_username" value="system"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="affirmations">
+            <column name="id" valueComputed="nextval('affirmations_id_seq')"/>
+            <column name="text" value="Я излучаю любовь и доброту"/>
+            <column name="author_id" value="1"/>
+            <column name="author_username" value="system"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="affirmations">
+            <column name="id" valueComputed="nextval('affirmations_id_seq')"/>
+            <column name="text" value="Я открыт для новых возможностей"/>
+            <column name="author_id" value="1"/>
+            <column name="author_username" value="system"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+
+        <insert tableName="affirmations">
+            <column name="id" valueComputed="nextval('affirmations_id_seq')"/>
+            <column name="text" value="Я верю в себя и свои способности"/>
+            <column name="author_id" value="1"/>
+            <column name="author_username" value="system"/>
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog> 
