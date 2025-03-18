@@ -1,13 +1,13 @@
 package com.devartall.psycho.bot.service.handlers
 
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.objects.Message
-import org.telegram.telegrambots.meta.api.objects.commands.BotCommand
-import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeChat
 import com.devartall.psycho.bot.service.AdminService
 import com.devartall.psycho.bot.service.AffirmationService
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.objects.Message
+import org.telegram.telegrambots.meta.api.objects.commands.BotCommand
+import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeChat
 
 @Component
 class CommandHandler(

@@ -1,8 +1,8 @@
 package com.devartall.psycho.bot.service.handlers
 
+import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
-import org.springframework.stereotype.Component
 
 @Component
 class KeyboardHelper {

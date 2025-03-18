@@ -8,7 +8,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
-import org.mockito.Mockito
 import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands

@@ -6,7 +6,6 @@ import org.springframework.boot.ApplicationRunner
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
 import org.telegram.telegrambots.meta.TelegramBotsApi
 import org.telegram.telegrambots.meta.api.methods.GetMe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
