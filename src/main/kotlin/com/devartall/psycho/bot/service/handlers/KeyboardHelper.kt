@@ -7,7 +7,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 @Component
 class KeyboardHelper {
     companion object {
-        const val GET_AFFIRMATION_BUTTON = "🎯 Получить аффирмацию"
+        const val GET_AFFIRMATION_PREFIX = "🎯"
+        const val GET_AFFIRMATION_BUTTON = "$GET_AFFIRMATION_PREFIX Получить аффирмацию"
     }
 
     fun createReplyKeyboardMarkup(): ReplyKeyboardMarkup {

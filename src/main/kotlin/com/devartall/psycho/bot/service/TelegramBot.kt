@@ -44,7 +44,7 @@ class TelegramBot(
             text = when (message.text) {
                 KeyboardHelper.GET_AFFIRMATION_BUTTON -> {
                     affirmationService.getRandomAffirmation()?.let { affirmation ->
-                        "🎯 ${affirmation.text}"
+                        "${KeyboardHelper.GET_AFFIRMATION_PREFIX} ${affirmation.text}"
                     } ?: "К сожалению, сейчас нет доступных аффирмаций"
                 }
                 else -> "Используйте кнопку \"${KeyboardHelper.GET_AFFIRMATION_BUTTON}\" для получения аффирмации или команду /start для просмотра инструкций"
