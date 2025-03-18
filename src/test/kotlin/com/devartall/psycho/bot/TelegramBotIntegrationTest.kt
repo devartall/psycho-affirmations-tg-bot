@@ -45,7 +45,7 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
     }
 
     @Test
-    fun `should handle generale message and response with start command`() {
+    fun `should handle general message and respond with start command`() {
         val update = createUpdateMessage("Hello, bot!")
 
         spyBot.onUpdateReceived(update)
