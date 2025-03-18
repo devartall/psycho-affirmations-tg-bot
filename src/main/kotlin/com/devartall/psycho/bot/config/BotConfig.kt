@@ -6,6 +6,5 @@ import java.time.Duration
 @ConfigurationProperties("bot")
 data class BotConfig(
     val token: String,
-    val adminPassword: String,
-    val adminCacheRefreshInterval: Duration
+    val adminPassword: String
 ) 

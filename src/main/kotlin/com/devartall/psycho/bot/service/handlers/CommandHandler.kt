@@ -17,12 +17,12 @@ class CommandHandler(
 ) {
     companion object {
         // Команды
-        private const val START_COMMAND = "/start"
-        private const val AUTH_COMMAND = "/auth"
-        private const val LOGOUT_COMMAND = "/logout"
-        private const val ADD_COMMAND = "/add"
-        private const val LIST_COMMAND = "/list"
-        private const val DELETE_ALL_COMMAND = "/delete"
+        const val START_COMMAND = "/start"
+        const val AUTH_COMMAND = "/auth"
+        const val LOGOUT_COMMAND = "/logout"
+        const val ADD_COMMAND = "/add"
+        const val LIST_COMMAND = "/list"
+        const val DELETE_ALL_COMMAND = "/delete"
 
         // Описания команд
         private const val START_DESCRIPTION = "Начать работу с ботом и получить инструкции"

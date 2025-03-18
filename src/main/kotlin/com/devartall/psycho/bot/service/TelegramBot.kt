@@ -7,24 +7,18 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.api.objects.Message
+import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
-import jakarta.annotation.PostConstruct
 
 @Component
 class TelegramBot(
     config: BotConfig,
-    private val commandHandler: CommandHandler,
+    val commandHandler: CommandHandler,
     private val keyboardHelper: KeyboardHelper,
     private val affirmationService: AffirmationService
 ) : TelegramLongPollingBot(config.token) {
     private val log = LoggerFactory.getLogger(TelegramBot::class.java)
-
-    @PostConstruct
-    fun init() {
-        log.info("Бот инициализирован, команды сброшены и установлены заново")
-    }
 
     override fun getBotUsername(): String = "PsychoBot"
 
@@ -38,8 +32,7 @@ class TelegramBot(
             else -> null
         }
 
-        val updateCommands = commandHandler.updateCommands(message)
-        execute(updateCommands)
+        execute(commandHandler.updateCommands(message))
 
         response?.let { sendMessage(it) }
     }
