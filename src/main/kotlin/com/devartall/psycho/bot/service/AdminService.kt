@@ -32,4 +32,8 @@ class AdminService(
     fun checkPassword(password: String): Boolean {
         return password == botConfig.adminPassword
     }
+
+    fun clearCache() {
+        adminCache.clear()
+    }
 } 

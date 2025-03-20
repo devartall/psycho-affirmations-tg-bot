@@ -10,10 +10,10 @@ data class Admin(
     val id: Long = 0,
 
     val telegramId: Long,
-    
+
     val username: String?,
-    
+
     val firstName: String,
-    
+
     val lastName: String?
 ) 

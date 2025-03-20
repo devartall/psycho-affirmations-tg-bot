@@ -27,4 +27,8 @@ class AdminCache(
         adminStatusCache[savedAdmin.telegramId] = true
         return savedAdmin
     }
+
+    fun clear() {
+        adminStatusCache.clear()
+    }
 } 

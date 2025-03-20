@@ -6,9 +6,11 @@ import com.devartall.psycho.bot.service.handlers.KeyboardHelper
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
+import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
+import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeChat
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 
 @Component
@@ -32,24 +34,40 @@ class TelegramBot(
             else -> null
         }
 
-        execute(commandHandler.updateCommands(message))
+        if (response != null) {
+            sendResponse(response, message)
+        }
+    }
 
-        response?.let { sendMessage(it) }
+    private fun sendResponse(response: SendMessage, message: Message) {
+        val chatIdString = message.chatId.toString()
+        val userId = message.from.id
+
+        val commands = SetMyCommands.builder()
+            .commands(commandHandler.getUserCommands(userId))
+            .scope(BotCommandScopeChat(chatIdString))
+            .build()
+        execute(commands)
+
+        response.apply {
+            enableMarkdown(true)
+            replyMarkup = keyboardHelper.createReplyKeyboardMarkup()
+            chatId = chatIdString
+        }
+        sendMessage(response)
     }
 
     private fun handleTextMessage(message: Message): SendMessage {
         return SendMessage().apply {
-            chatId = message.chatId.toString()
-            replyMarkup = keyboardHelper.createReplyKeyboardMarkup()
             text = when (message.text) {
                 KeyboardHelper.GET_AFFIRMATION_BUTTON -> {
                     affirmationService.getRandomAffirmation()?.let { affirmation ->
                         "${KeyboardHelper.GET_AFFIRMATION_PREFIX} ${affirmation.text}"
                     } ?: "К сожалению, сейчас нет доступных аффирмаций"
                 }
+
                 else -> "Используйте кнопку \"${KeyboardHelper.GET_AFFIRMATION_BUTTON}\" для получения аффирмации или команду /start для просмотра инструкций"
             }
-            enableMarkdown(true)
         }
     }
 

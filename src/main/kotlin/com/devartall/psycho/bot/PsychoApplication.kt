@@ -9,5 +9,5 @@ import org.springframework.boot.runApplication
 class PsychoApplication
 
 fun main(args: Array<String>) {
-	runApplication<PsychoApplication>(*args)
+    runApplication<PsychoApplication>(*args)
 }

@@ -25,15 +25,15 @@ class BotInitializer {
     fun initializeBot(bot: TelegramBot, botConfig: BotConfig) = ApplicationRunner {
         try {
             log.info("Инициализация бота с токеном: {}", maskToken(botConfig.token))
-            
+
             // Проверяем подключение к API Telegram
             val botInfo = bot.execute(GetMe())
             log.info("Бот успешно подключен: @{}", botInfo.userName)
-            
+
             // Регистрируем бота
             val botsApi = TelegramBotsApi(DefaultBotSession::class.java)
             botsApi.registerBot(bot)
-            
+
             log.info("Бот успешно запущен и готов к работе")
         } catch (e: TelegramApiException) {
             val errorMessage = "Ошибка при инициализации бота: ${e.message}"

@@ -20,7 +20,7 @@ class KeyboardHelper {
         val row = KeyboardRow()
         row.add(GET_AFFIRMATION_BUTTON)
         rows.add(row)
-        
+
         keyboard.keyboard = rows
         return keyboard
     }

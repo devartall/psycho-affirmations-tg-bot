@@ -3,17 +3,14 @@ package com.devartall.psycho.bot.service.handlers
 import com.devartall.psycho.bot.service.AdminService
 import com.devartall.psycho.bot.service.AffirmationService
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand
-import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeChat
 
 @Component
 class CommandHandler(
     private val adminService: AdminService,
     private val affirmationService: AffirmationService,
-    private val keyboardHelper: KeyboardHelper,
 ) {
     companion object {
         // Команды
@@ -46,43 +43,33 @@ class CommandHandler(
         BotCommand(DELETE_ALL_COMMAND.removePrefix("/"), DELETE_ALL_DESCRIPTION)
     )
 
-    fun setDefaultCommands(chatId: Long): SetMyCommands {
-        val commandScope = BotCommandScopeChat(chatId.toString())
-
-        val setMyCommands = SetMyCommands.builder()
-            .commands(getDefaultCommands())
-            .scope(commandScope)
-            .build()
-
-        return setMyCommands
-    }
-
-    fun setAdminCommands(chatId: Long): SetMyCommands {
-        val commandScope = BotCommandScopeChat(chatId.toString())
-
-        val setMyCommands = SetMyCommands.builder()
-            .commands(getAdminCommands())
-            .scope(commandScope)
-            .build()
-
-        return setMyCommands
-    }
-
     fun handleCommand(message: Message): SendMessage {
         val command = message.text.split(" ")[0]
+
+        if (command != START_COMMAND &&
+            isAdminCommand(command) &&
+            !adminService.isAdmin(message.from.id)
+        ) {
+            return SendMessage().apply {
+                text = "Эта команда доступна только администраторам"
+            }
+        }
+
         return when (command) {
             START_COMMAND -> handleStartCommand(message)
             AUTH_COMMAND -> handleAuthCommand(message)
             LOGOUT_COMMAND -> handleLogoutCommand(message)
             ADD_COMMAND -> handleAddCommand(message)
-            LIST_COMMAND -> handleListCommand(message)
-            DELETE_ALL_COMMAND -> handleDeleteAllCommand(message)
+            LIST_COMMAND -> handleListCommand()
+            DELETE_ALL_COMMAND -> handleDeleteAllCommand()
             else -> SendMessage().apply {
-                chatId = message.chatId.toString()
-                text = "Неизвестная команда. Используйте $START_COMMAND для получения инструкций."
-                replyMarkup = keyboardHelper.createReplyKeyboardMarkup()
+                text = "Неизвестная команда. Используйте $START_COMMAND для получения инструкций"
             }
         }
+    }
+
+    private fun isAdminCommand(command: String): Boolean {
+        return getAdminCommands().map { "/${it.command}" }.contains(command)
     }
 
     private fun handleStartCommand(message: Message): SendMessage {
@@ -103,18 +90,12 @@ class CommandHandler(
         }
 
         return SendMessage().apply {
-            chatId = message.chatId.toString()
             text = helpText
-            enableMarkdown(true)
-            replyMarkup = keyboardHelper.createReplyKeyboardMarkup()
         }
     }
 
     private fun handleAuthCommand(message: Message): SendMessage {
-        val chatId = message.chatId.toString()
         val response = SendMessage().apply {
-            this.chatId = chatId
-            replyMarkup = keyboardHelper.createReplyKeyboardMarkup()
             text = when {
                 adminService.isAdmin(message.from.id) ->
                     "Вы уже являетесь администратором"
@@ -126,7 +107,6 @@ class CommandHandler(
                     val password = message.text.split(" ")[1]
                     if (adminService.checkPassword(password)) {
                         adminService.addAdmin(message.from)
-                        updateCommands(message)
                         "Вы успешно авторизованы как администратор"
                     } else {
                         "Неверный пароль"
@@ -138,29 +118,16 @@ class CommandHandler(
     }
 
     private fun handleLogoutCommand(message: Message): SendMessage {
-        val chatId = message.chatId.toString()
+        adminService.removeAdmin(message.from.id)
         val response = SendMessage().apply {
-            this.chatId = chatId
-            replyMarkup = keyboardHelper.createReplyKeyboardMarkup()
-            text = if (adminService.isAdmin(message.from.id)) {
-                adminService.removeAdmin(message.from.id)
-                updateCommands(message)
-                "Вы успешно вышли из режима администратора"
-            } else {
-                "Вы не являетесь администратором"
-            }
+            text = "Вы успешно вышли из режима администратора"
         }
         return response
     }
 
     private fun handleAddCommand(message: Message): SendMessage {
         return SendMessage().apply {
-            chatId = message.chatId.toString()
-            replyMarkup = keyboardHelper.createReplyKeyboardMarkup()
             text = when {
-                !adminService.isAdmin(message.from.id) ->
-                    "Эта команда доступна только администраторам"
-
                 message.text.substringAfter(ADD_COMMAND).trim().isEmpty() ->
                     "Пожалуйста, укажите текст аффирмации после команды $ADD_COMMAND"
 
@@ -173,57 +140,39 @@ class CommandHandler(
         }
     }
 
-    private fun handleListCommand(message: Message): SendMessage {
+    private fun handleListCommand(): SendMessage {
+        val affirmations = affirmationService.getAllAffirmations()
         return SendMessage().apply {
-            chatId = message.chatId.toString()
-            replyMarkup = keyboardHelper.createReplyKeyboardMarkup()
-            enableMarkdown(true)
-            text = when {
-                !adminService.isAdmin(message.from.id) ->
-                    "Эта команда доступна только администраторам"
-
-                else -> {
-                    val affirmations = affirmationService.getAllAffirmations()
-                    if (affirmations.isEmpty()) {
-                        "Список аффирмаций пуст"
-                    } else {
-                        buildString {
-                            append("📝 Список всех аффирмаций:\n\n")
-                            affirmations.forEachIndexed { index, affirmation ->
-                                append("${index + 1}. ${affirmation.text}\n")
-                                append("   _Добавил: @${affirmation.authorUsername}_\n\n")
-                            }
-                        }
+            text = if (affirmations.isEmpty()) {
+                "Список аффирмаций пуст"
+            } else {
+                buildString {
+                    append("📝 Список всех аффирмаций:\n\n")
+                    affirmations.forEachIndexed { index, affirmation ->
+                        append("${index + 1}. ${affirmation.text}\n")
+                        append("   _Добавил: @${affirmation.authorUsername}_\n\n")
                     }
                 }
             }
         }
     }
 
-    private fun handleDeleteAllCommand(message: Message): SendMessage {
+    private fun handleDeleteAllCommand(): SendMessage {
+        val count = affirmationService.deleteAllAffirmations()
         return SendMessage().apply {
-            chatId = message.chatId.toString()
-            replyMarkup = keyboardHelper.createReplyKeyboardMarkup()
-            text = when {
-                !adminService.isAdmin(message.from.id) ->
-                    "Эта команда доступна только администраторам"
-
-                else -> {
-                    val count = affirmationService.deleteAllAffirmations()
-                    "Успешно удалено $count аффирмаций"
-                }
-            }
+            text = "Успешно удалено $count аффирмаций"
         }
     }
 
-    fun updateCommands(message: Message): SetMyCommands {
-        val chatId = message.chatId
-        val isAdmin = adminService.isAdmin(message.from.id)
+    fun clearAdminCache() {
+        adminService.clearCache()
+    }
 
-        return if (isAdmin) {
-            setAdminCommands(chatId)
+    fun getUserCommands(userId: Long): List<BotCommand> {
+        return if (adminService.isAdmin(userId)) {
+            getAdminCommands()
         } else {
-            setDefaultCommands(chatId)
+            getDefaultCommands()
         }
     }
 } 
