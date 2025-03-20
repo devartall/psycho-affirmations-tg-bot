@@ -3,6 +3,7 @@ package com.devartall.psycho.bot.service
 import com.devartall.psycho.bot.config.BotConfig
 import com.devartall.psycho.bot.entity.Admin
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.telegram.telegrambots.meta.api.objects.User
 
 @Service
@@ -14,6 +15,7 @@ class AdminService(
         return adminCache.isAdmin(telegramId)
     }
 
+    @Transactional
     fun addAdmin(user: User): Admin {
         return adminCache.save(
             Admin(
@@ -25,6 +27,7 @@ class AdminService(
         )
     }
 
+    @Transactional
     fun removeAdmin(telegramId: Long) {
         adminCache.delete(telegramId)
     }

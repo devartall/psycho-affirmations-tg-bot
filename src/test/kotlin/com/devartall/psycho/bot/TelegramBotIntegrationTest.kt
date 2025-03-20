@@ -1,6 +1,7 @@
 package com.devartall.psycho.bot
 
 import com.devartall.psycho.bot.entity.Affirmation
+import com.devartall.psycho.bot.entity.Admin
 import com.devartall.psycho.bot.repository.AdminRepository
 import com.devartall.psycho.bot.repository.AffirmationRepository
 import com.devartall.psycho.bot.service.TelegramBot
@@ -199,6 +200,77 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
         assertTrue(adminRepository.existsByTelegramId(defaultUser.id))
     }
 
+    @Test
+    fun `should handle add command`() {
+        addAdmin()
+        val update = createCommand("${CommandHandler.ADD_COMMAND} Новая аффирмация")
+
+        spyBot.onUpdateReceived(update)
+        verifySetAdminCommands()
+
+        val sendMessageCaptor = ArgumentCaptor.forClass(SendMessage::class.java)
+        verify(spyBot, times(1)).execute(sendMessageCaptor.capture())
+        assertThat(sendMessageCaptor.value.text).isEqualTo("Аффирмация успешно добавлена")
+        assertThat(affirmationRepository.findAll()).hasSize(1)
+        assertThat(affirmationRepository.findAll()[0].text).isEqualTo("Новая аффирмация")
+    }
+
+    @Test
+    fun `should handle list command`() {
+        addAdmin()
+        affirmationRepository.save(
+            Affirmation(
+                text = "Тестовая аффирмация",
+                authorId = defaultUser.id,
+                authorUsername = defaultUser.userName
+            )
+        )
+        val update = createCommand(CommandHandler.LIST_COMMAND)
+
+        spyBot.onUpdateReceived(update)
+        verifySetAdminCommands()
+
+        val sendMessageCaptor = ArgumentCaptor.forClass(SendMessage::class.java)
+        verify(spyBot, times(1)).execute(sendMessageCaptor.capture())
+        assertThat(sendMessageCaptor.value.text).contains("Тестовая аффирмация")
+        assertThat(sendMessageCaptor.value.text).contains(defaultUser.userName)
+    }
+
+    @Test
+    fun `should handle delete command`() {
+        addAdmin()
+        affirmationRepository.save(
+            Affirmation(
+                text = "Тестовая аффирмация",
+                authorId = defaultUser.id,
+                authorUsername = defaultUser.userName
+            )
+        )
+        val update = createCommand(CommandHandler.DELETE_ALL_COMMAND)
+
+        spyBot.onUpdateReceived(update)
+        verifySetAdminCommands()
+
+        val sendMessageCaptor = ArgumentCaptor.forClass(SendMessage::class.java)
+        verify(spyBot, times(1)).execute(sendMessageCaptor.capture())
+        assertThat(sendMessageCaptor.value.text).isEqualTo("Успешно удалено 1 аффирмаций")
+        assertThat(affirmationRepository.findAll()).isEmpty()
+    }
+
+    @Test
+    fun `should handle logout command`() {
+        addAdmin()
+        val update = createCommand(CommandHandler.LOGOUT_COMMAND)
+
+        spyBot.onUpdateReceived(update)
+        verifySetDefaultCommands()
+
+        val sendMessageCaptor = ArgumentCaptor.forClass(SendMessage::class.java)
+        verify(spyBot, times(1)).execute(sendMessageCaptor.capture())
+        assertThat(sendMessageCaptor.value.text).isEqualTo("Вы успешно вышли из режима администратора")
+        assertThat(adminRepository.existsByTelegramId(defaultUser.id)).isFalse()
+    }
+
     private fun createMessage(text: String): Update {
         return Update().apply {
             message = Message().apply {
@@ -221,6 +293,15 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
                 chat = defaultChat
             }
         }
+    }
+
+    private fun addAdmin() {
+        adminRepository.save(Admin(
+            telegramId = defaultUser.id,
+            username = defaultUser.userName,
+            firstName = defaultUser.firstName,
+            lastName = defaultUser.lastName
+        ))
     }
 
     private fun verifySetDefaultCommands() {
