@@ -216,15 +216,8 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
     }
 
     @Test
-    fun `should handle list command`() {
+    fun `should handle list command without affirmations`() {
         addAdmin()
-        affirmationRepository.save(
-            Affirmation(
-                text = "Тестовая аффирмация",
-                authorId = defaultUser.id,
-                authorUsername = defaultUser.userName
-            )
-        )
         val update = createCommand(CommandHandler.LIST_COMMAND)
 
         spyBot.onUpdateReceived(update)
@@ -232,8 +225,55 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
 
         val sendMessageCaptor = ArgumentCaptor.forClass(SendMessage::class.java)
         verify(spyBot, times(1)).execute(sendMessageCaptor.capture())
-        assertThat(sendMessageCaptor.value.text).contains("Тестовая аффирмация")
-        assertThat(sendMessageCaptor.value.text).contains(defaultUser.userName)
+        assertThat(sendMessageCaptor.value.text).isEqualTo("Список аффирмаций пуст")
+    }
+
+    @Test
+    fun `should handle list command with several affirmations`() {
+        addAdmin()
+        
+        val affirmationText1 = "Первая аффирмация"
+        affirmationRepository.save(
+            Affirmation(
+                text = affirmationText1,
+                authorId = defaultUser.id,
+                authorUsername = defaultUser.userName
+            )
+        )
+
+        val affirmationText2 = "Вторая аффирмация"
+        affirmationRepository.save(
+            Affirmation(
+                text = affirmationText2,
+                authorId = defaultUser.id,
+                authorUsername = defaultUser.userName
+            )
+        )
+
+        val affirmationText3 = "Третья аффирмация"
+        affirmationRepository.save(
+            Affirmation(
+                text = affirmationText3,
+                authorId = defaultUser.id,
+                authorUsername = defaultUser.userName
+            )
+        )
+
+        val update = createCommand(CommandHandler.LIST_COMMAND)
+
+        spyBot.onUpdateReceived(update)
+        verifySetAdminCommands()
+
+        val sendMessageCaptor = ArgumentCaptor.forClass(SendMessage::class.java)
+        verify(spyBot, times(1)).execute(sendMessageCaptor.capture())
+        
+        val responseText = sendMessageCaptor.value.text
+        assertThat(responseText).contains("📝 Список всех аффирмаций:")
+        assertThat(responseText).contains(affirmationText1)
+        assertThat(responseText).contains(affirmationText2)
+        assertThat(responseText).contains(affirmationText3)
+        assertThat(responseText).contains(defaultUser.userName)
+        assertThat(affirmationRepository.findAll()).hasSize(3)
     }
 
     @Test
