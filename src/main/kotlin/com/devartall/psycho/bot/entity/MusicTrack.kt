@@ -12,7 +12,7 @@ class MusicTrack(
     val fileId: String,
     val authorId: Long,
     val authorUsername: String,
-    val artistName: String,
+    val artistName: String?,
     val trackTitle: String,
     val createdAt: LocalDateTime = LocalDateTime.now()
 ) 

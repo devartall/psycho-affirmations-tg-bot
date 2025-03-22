@@ -17,12 +17,13 @@ class AudioHandler(
         }
 
         val audio = message.audio
+
         musicTrackService.addMusicTrack(
             fileId = audio.fileId,
             authorId = message.from.id,
             authorUsername = message.from.userName,
             artistName = audio.performer,
-            trackTitle = audio.title
+            trackTitle = audio.title ?: audio.fileName
         )
 
         return SendMessage().apply {

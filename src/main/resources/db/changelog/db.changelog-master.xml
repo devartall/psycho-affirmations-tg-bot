@@ -9,5 +9,6 @@
     <include file="changes/02-create-affirmations-table.xml" relativeToChangelogFile="true"/>
     <include file="changes/03-insert-initial-affirmations.xml" relativeToChangelogFile="true"/>
     <include file="changes/04-create-music-track-table.xml" relativeToChangelogFile="true"/>
+    <include file="changes/05-update-music-track-artistname-nullable.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog> 

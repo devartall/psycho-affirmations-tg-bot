@@ -16,7 +16,7 @@ class MusicTrackService(private val musicTrackRepository: MusicTrackRepository) 
     }
 
     @Transactional
-    fun addMusicTrack(fileId: String, authorId: Long, authorUsername: String, artistName: String, trackTitle: String) {
+    fun addMusicTrack(fileId: String, authorId: Long, authorUsername: String, artistName: String?, trackTitle: String) {
         val musicTrack = MusicTrack(
             fileId = fileId,
             authorId = authorId,

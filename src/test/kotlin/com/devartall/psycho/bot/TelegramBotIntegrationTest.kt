@@ -352,7 +352,7 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
 
         val responseText = sendMessageCaptor.value.text
         assertThat(responseText).contains("🎵 *Список всех музыкальных треков*:")
-        assertThat(responseText).contains("ID: ${track.id}, Исполнитель: *${track.artistName.replace("_", "\\_")}*, Композиция: *${track.trackTitle.replace("_", "\\_")}*, Добавил: @${track.authorUsername.replace("_", "\\_")}")
+        assertThat(responseText).contains("ID: ${track.id}, Исполнитель: *${track.artistName?.replace("_", "\\_")}*, Композиция: *${track.trackTitle.replace("_", "\\_")}*, Добавил: @${track.authorUsername.replace("_", "\\_")}")
     }
 
     @Test
@@ -385,8 +385,33 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
 
         val responseText = sendMessageCaptor.value.text
         assertThat(responseText).contains("🎵 *Список всех музыкальных треков*:")
-        assertThat(responseText).contains("ID: ${track1.id}, Исполнитель: *${track1.artistName.replace("_", "\\_")}*, Композиция: *${track1.trackTitle.replace("_", "\\_")}*, Добавил: @${track1.authorUsername.replace("_", "\\_")}")
-        assertThat(responseText).contains("ID: ${track2.id}, Исполнитель: *${track2.artistName.replace("_", "\\_")}*, Композиция: *${track2.trackTitle.replace("_", "\\_")}*, Добавил: @${track2.authorUsername.replace("_", "\\_")}")
+        assertThat(responseText).contains("ID: ${track1.id}, Исполнитель: *${track1.artistName?.replace("_", "\\_")}*, Композиция: *${track1.trackTitle.replace("_", "\\_")}*, Добавил: @${track1.authorUsername.replace("_", "\\_")}")
+        assertThat(responseText).contains("ID: ${track2.id}, Исполнитель: *${track2.artistName?.replace("_", "\\_")}*, Композиция: *${track2.trackTitle.replace("_", "\\_")}*, Добавил: @${track2.authorUsername.replace("_", "\\_")}")
+    }
+
+    @Test
+    fun `should add music track with empty title and use file name as title`() {
+        addAdmin()
+
+        // Создаем документ с пустым названием трека
+        val document = Audio().apply {
+            fileId = "fileId1"
+            fileName = "defaultTrackTitle.mp3"
+        }
+
+        val message = Message().apply {
+            this.audio = document
+            from = defaultUser
+            chat = defaultChat
+        }
+
+        // Обрабатываем сообщение
+        spyBot.onUpdateReceived(Update().apply { this.message = message })
+
+        // Проверяем, что трек добавлен с названием файла
+        val tracks = musicTrackRepository.findAll()
+        assertThat(tracks).hasSize(1)
+        assertThat(tracks[0].trackTitle).isEqualTo("defaultTrackTitle.mp3")
     }
 
     private fun createMessage(text: String): Update {

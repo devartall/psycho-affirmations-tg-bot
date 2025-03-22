@@ -87,7 +87,7 @@ class CommandHandler(
                 buildString {
                     append("🎵 *Список всех музыкальных треков*:\n\n")
                     tracks.forEach { track ->
-                        append("ID: ${track.id}, Исполнитель: *${track.artistName.replace("_", "\\_")}*, Композиция: *${track.trackTitle.replace("_", "\\_")}*, Добавил: @${track.authorUsername.replace("_", "\\_")}\n")
+                        append("ID: ${track.id}, Исполнитель: *${track.artistName?.replace("_", "\\_")}*, Композиция: *${track.trackTitle.replace("_", "\\_")}*, Добавил: @${track.authorUsername.replace("_", "\\_")}\n")
                     }
                 }
             }
