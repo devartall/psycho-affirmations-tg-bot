@@ -32,7 +32,7 @@ services:
     networks:
       - psycho-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d mydb"]
+      test: [ "CMD-SHELL", "pg_isready -U myuser -d mydb" ]
       interval: 5s
       timeout: 5s
       retries: 5
