@@ -1,12 +1,12 @@
 package com.devartall.psycho.bot
 
-import com.devartall.psycho.bot.entity.Affirmation
 import com.devartall.psycho.bot.entity.Admin
+import com.devartall.psycho.bot.entity.Affirmation
 import com.devartall.psycho.bot.repository.AdminRepository
 import com.devartall.psycho.bot.repository.AffirmationRepository
 import com.devartall.psycho.bot.service.TelegramBot
 import com.devartall.psycho.bot.service.handlers.CommandHandler
-import com.devartall.psycho.bot.service.handlers.KeyboardHelper
+import com.devartall.psycho.bot.service.handlers.KeyboardHandler
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -66,7 +66,7 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
 
     @Test
     fun `should handle get affirmation button without affirmations`() {
-        val update = createMessage(KeyboardHelper.GET_AFFIRMATION_BUTTON)
+        val update = createMessage(KeyboardHandler.GET_AFFIRMATION_BUTTON)
 
         spyBot.onUpdateReceived(update)
         verifySetDefaultCommands()
@@ -78,7 +78,7 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
 
     @Test
     fun `should handle get affirmation button with one affirmation`() {
-        val update = createMessage(KeyboardHelper.GET_AFFIRMATION_BUTTON)
+        val update = createMessage(KeyboardHandler.GET_AFFIRMATION_BUTTON)
 
         val affirmationText1 = "affirmationText1"
         affirmationRepository.save(
@@ -94,12 +94,12 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
 
         val sendMessageCaptor = ArgumentCaptor.forClass(SendMessage::class.java)
         verify(spyBot, times(1)).execute(sendMessageCaptor.capture())
-        assertThat(sendMessageCaptor.value.text).isEqualTo("${KeyboardHelper.GET_AFFIRMATION_PREFIX} $affirmationText1")
+        assertThat(sendMessageCaptor.value.text).isEqualTo("${KeyboardHandler.GET_AFFIRMATION_PREFIX} $affirmationText1")
     }
 
     @Test
     fun `should handle get affirmation button with several affirmations`() {
-        val update = createMessage(KeyboardHelper.GET_AFFIRMATION_BUTTON)
+        val update = createMessage(KeyboardHandler.GET_AFFIRMATION_BUTTON)
 
         val affirmationText1 = "affirmationText1"
         affirmationRepository.save(
@@ -134,9 +134,9 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
         val sendMessageCaptor = ArgumentCaptor.forClass(SendMessage::class.java)
         verify(spyBot, times(1)).execute(sendMessageCaptor.capture())
         assertThat(sendMessageCaptor.value.text).containsAnyOf(
-            "${KeyboardHelper.GET_AFFIRMATION_PREFIX} $affirmationText1",
-            "${KeyboardHelper.GET_AFFIRMATION_PREFIX} $affirmationText2",
-            "${KeyboardHelper.GET_AFFIRMATION_PREFIX} $affirmationText3"
+            "${KeyboardHandler.GET_AFFIRMATION_PREFIX} $affirmationText1",
+            "${KeyboardHandler.GET_AFFIRMATION_PREFIX} $affirmationText2",
+            "${KeyboardHandler.GET_AFFIRMATION_PREFIX} $affirmationText3"
         )
     }
 
@@ -231,7 +231,7 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
     @Test
     fun `should handle list command with several affirmations`() {
         addAdmin()
-        
+
         val affirmationText1 = "Первая аффирмация"
         affirmationRepository.save(
             Affirmation(
@@ -266,7 +266,7 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
 
         val sendMessageCaptor = ArgumentCaptor.forClass(SendMessage::class.java)
         verify(spyBot, times(1)).execute(sendMessageCaptor.capture())
-        
+
         val responseText = sendMessageCaptor.value.text
         assertThat(responseText).contains("📝 Список всех аффирмаций:")
         assertThat(responseText).contains(affirmationText1)
@@ -336,12 +336,14 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
     }
 
     private fun addAdmin() {
-        adminRepository.save(Admin(
-            telegramId = defaultUser.id,
-            username = defaultUser.userName,
-            firstName = defaultUser.firstName,
-            lastName = defaultUser.lastName
-        ))
+        adminRepository.save(
+            Admin(
+                telegramId = defaultUser.id,
+                username = defaultUser.userName,
+                firstName = defaultUser.firstName,
+                lastName = defaultUser.lastName
+            )
+        )
     }
 
     private fun verifySetDefaultCommands() {

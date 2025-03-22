@@ -1,12 +1,14 @@
 package com.devartall.psycho.bot.service
 
 import com.devartall.psycho.bot.config.BotConfig
+import com.devartall.psycho.bot.service.handlers.AudioHandler
 import com.devartall.psycho.bot.service.handlers.CommandHandler
-import com.devartall.psycho.bot.service.handlers.KeyboardHelper
+import com.devartall.psycho.bot.service.handlers.KeyboardHandler
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands
+import org.telegram.telegrambots.meta.api.methods.send.SendAudio
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -17,8 +19,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 class TelegramBot(
     config: BotConfig,
     val commandHandler: CommandHandler,
-    private val keyboardHelper: KeyboardHelper,
-    private val affirmationService: AffirmationService
+    val audioHandler: AudioHandler,
+    private val keyboardHandler: KeyboardHandler,
 ) : TelegramLongPollingBot(config.token) {
     private val log = LoggerFactory.getLogger(TelegramBot::class.java)
 
@@ -30,16 +32,15 @@ class TelegramBot(
         val message = update.message
         val response = when {
             message.isCommand -> commandHandler.handleCommand(message)
+            message.hasAudio() -> audioHandler.handleAudio(message)
             message.hasText() -> handleTextMessage(message)
             else -> null
         }
 
-        if (response != null) {
-            sendResponse(response, message)
-        }
+        sendResponse(response, message)
     }
 
-    private fun sendResponse(response: SendMessage, message: Message) {
+    private fun sendResponse(response: SendMessage?, message: Message) {
         val chatIdString = message.chatId.toString()
         val userId = message.from.id
 
@@ -49,24 +50,30 @@ class TelegramBot(
             .build()
         execute(commands)
 
-        response.apply {
-            enableMarkdown(true)
-            replyMarkup = keyboardHelper.createReplyKeyboardMarkup()
-            chatId = chatIdString
+        response?.let {
+            it.enableMarkdown(true)
+            it.replyMarkup = keyboardHandler.createReplyKeyboardMarkup()
+            it.chatId = chatIdString
+
+            sendMessage(it)
         }
-        sendMessage(response)
     }
 
-    private fun handleTextMessage(message: Message): SendMessage {
-        return SendMessage().apply {
-            text = when (message.text) {
-                KeyboardHelper.GET_AFFIRMATION_BUTTON -> {
-                    affirmationService.getRandomAffirmation()?.let { affirmation ->
-                        "${KeyboardHelper.GET_AFFIRMATION_PREFIX} ${affirmation.text}"
-                    } ?: "К сожалению, сейчас нет доступных аффирмаций"
-                }
+    private fun handleTextMessage(message: Message): SendMessage? {
+        return when (message.text) {
+            KeyboardHandler.GET_AFFIRMATION_BUTTON -> keyboardHandler.handleAffirmationButton()
+            KeyboardHandler.GET_MUSIC_BUTTON -> {
+                val audio = keyboardHandler.handleMusicButton(message)
+                    ?: return SendMessage().apply {
+                        text = "Нет доступных музыкальных треков"
+                    }
 
-                else -> "Используйте кнопку \"${KeyboardHelper.GET_AFFIRMATION_BUTTON}\" для получения аффирмации или команду /start для просмотра инструкций"
+                sendAudio(audio)
+                return null
+            }
+
+            else -> SendMessage().apply {
+                text = "Используй команду ${CommandHandler.START_COMMAND} для просмотра инструкций"
             }
         }
     }
@@ -76,6 +83,14 @@ class TelegramBot(
             execute(message)
         } catch (e: TelegramApiException) {
             log.error("Ошибка при отправке сообщения", e)
+        }
+    }
+
+    private fun sendAudio(audio: SendAudio) {
+        try {
+            execute(audio)
+        } catch (e: TelegramApiException) {
+            log.error("Ошибка при отправке аудио", e)
         }
     }
 } 
