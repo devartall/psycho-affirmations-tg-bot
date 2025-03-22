@@ -2,8 +2,10 @@ package com.devartall.psycho.bot
 
 import com.devartall.psycho.bot.entity.Admin
 import com.devartall.psycho.bot.entity.Affirmation
+import com.devartall.psycho.bot.entity.MusicTrack
 import com.devartall.psycho.bot.repository.AdminRepository
 import com.devartall.psycho.bot.repository.AffirmationRepository
+import com.devartall.psycho.bot.repository.MusicTrackRepository
 import com.devartall.psycho.bot.service.TelegramBot
 import com.devartall.psycho.bot.service.handlers.CommandHandler
 import com.devartall.psycho.bot.service.handlers.KeyboardHandler
@@ -36,6 +38,8 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
     @Autowired
     private lateinit var affirmationRepository: AffirmationRepository
 
+    @Autowired
+    private lateinit var musicTrackRepository: MusicTrackRepository
 
     private val defaultUser: User = User().apply {
         id = 100L
@@ -50,6 +54,7 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
         spyBot.commandHandler.clearAdminCache()
         adminRepository.deleteAll()
         affirmationRepository.deleteAll()
+        musicTrackRepository.deleteAll()
     }
 
     @Test
@@ -309,6 +314,79 @@ class TelegramBotIntegrationTest(@Autowired bot: TelegramBot) : AbstractIntegrat
         verify(spyBot, times(1)).execute(sendMessageCaptor.capture())
         assertThat(sendMessageCaptor.value.text).isEqualTo("Вы успешно вышли из режима администратора")
         assertThat(adminRepository.existsByTelegramId(defaultUser.id)).isFalse()
+    }
+
+    @Test
+    fun `should handle list tracks without tracks`() {
+        addAdmin()
+        val update = createCommand(CommandHandler.LIST_TRACKS_COMMAND)
+
+        spyBot.onUpdateReceived(update)
+        verifySetAdminCommands()
+
+        val sendMessageCaptor = ArgumentCaptor.forClass(SendMessage::class.java)
+        verify(spyBot, times(1)).execute(sendMessageCaptor.capture())
+        assertThat(sendMessageCaptor.value.text).isEqualTo("Список музыкальных треков пуст")
+    }
+
+    @Test
+    fun `should handle list tracks with one track`() {
+        addAdmin()
+        val update = createCommand(CommandHandler.LIST_TRACKS_COMMAND)
+
+        // Добавляем один трек в репозиторий
+        val track = MusicTrack(
+            fileId = "fileId1",
+            authorId = defaultUser.id,
+            authorUsername = defaultUser.userName,
+            artistName = "Artist 1",
+            trackTitle = "Track 1"
+        )
+        musicTrackRepository.save(track)
+
+        spyBot.onUpdateReceived(update)
+        verifySetAdminCommands()
+
+        val sendMessageCaptor = ArgumentCaptor.forClass(SendMessage::class.java)
+        verify(spyBot, times(1)).execute(sendMessageCaptor.capture())
+
+        val responseText = sendMessageCaptor.value.text
+        assertThat(responseText).contains("🎵 *Список всех музыкальных треков*:")
+        assertThat(responseText).contains("ID: ${track.id}, Исполнитель: *${track.artistName.replace("_", "\\_")}*, Композиция: *${track.trackTitle.replace("_", "\\_")}*, Добавил: @${track.authorUsername.replace("_", "\\_")}")
+    }
+
+    @Test
+    fun `should handle list tracks with several tracks`() {
+        addAdmin()
+        val update = createCommand(CommandHandler.LIST_TRACKS_COMMAND)
+
+        // Добавляем несколько треков в репозиторий
+        val track1 = MusicTrack(
+            fileId = "fileId1",
+            authorId = defaultUser.id,
+            authorUsername = defaultUser.userName,
+            artistName = "Artist 1",
+            trackTitle = "Track 1"
+        )
+        val track2 = MusicTrack(
+            fileId = "fileId2",
+            authorId = defaultUser.id,
+            authorUsername = defaultUser.userName,
+            artistName = "Artist 2",
+            trackTitle = "Track 2"
+        )
+        musicTrackRepository.saveAll(listOf(track1, track2))
+
+        spyBot.onUpdateReceived(update)
+        verifySetAdminCommands()
+
+        val sendMessageCaptor = ArgumentCaptor.forClass(SendMessage::class.java)
+        verify(spyBot, times(1)).execute(sendMessageCaptor.capture())
+
+        val responseText = sendMessageCaptor.value.text
+        assertThat(responseText).contains("🎵 *Список всех музыкальных треков*:")
+        assertThat(responseText).contains("ID: ${track1.id}, Исполнитель: *${track1.artistName.replace("_", "\\_")}*, Композиция: *${track1.trackTitle.replace("_", "\\_")}*, Добавил: @${track1.authorUsername.replace("_", "\\_")}")
+        assertThat(responseText).contains("ID: ${track2.id}, Исполнитель: *${track2.artistName.replace("_", "\\_")}*, Композиция: *${track2.trackTitle.replace("_", "\\_")}*, Добавил: @${track2.authorUsername.replace("_", "\\_")}")
     }
 
     private fun createMessage(text: String): Update {
